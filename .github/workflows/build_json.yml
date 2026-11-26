@@ -25,8 +25,12 @@ jobs:
 
       - name: Commit and push updated JSON files
         run: |
+          ls -la
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add Giaitri.json truyen_hinh.json the_thao.json
+          for f in Giaitri.json truyen_hinh.json the_thao.json; do
+            [ -f "$f" ] && git add "$f" || echo "Skip missing file: $f"
+          done
           git diff --staged --quiet || git commit -m "Auto update TV & Sports JSON feeds"
           git push
+          

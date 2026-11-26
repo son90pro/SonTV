@@ -1,8 +1,12 @@
 {
   "sources": [
     {
+      "name": "TRUYỀN HÌNH",
+      "url": "https://raw.githubusercontent.com/son90pro/SonTV/refs/heads/main/truyen_hinh.json"
+    },
+    {
       "name": "THỂ THAO",
-      "url": "https://raw.githubusercontent.com/son90pro/TV/refs/heads/main/the_thao.json"
+      "url": "https://raw.githubusercontent.com/son90pro/SonTV/refs/heads/main/the_thao.json"
     }
   ]
 }

@@ -1,10 +1,15 @@
 import json
+import os
 import re
 from collections import defaultdict
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-REPO_RAW_BASE = "https://raw.githubusercontent.com/son90pro/TV/refs/heads/main"
+
+def get_raw_base() -> str:
+    repo = os.environ.get("GITHUB_REPOSITORY", "son90pro/TV")
+    ref = os.environ.get("GITHUB_REF_NAME", "main")
+    return f"https://raw.githubusercontent.com/{repo}/refs/heads/{ref}"
 
 
 def fetch_text(source: str) -> str:
@@ -18,7 +23,10 @@ def fetch_text(source: str) -> str:
         )
         with urlopen(req, timeout=25) as resp:
             return resp.read().decode("utf-8", errors="replace")
-    return Path(source).read_text(encoding="utf-8", errors="replace")
+    path = Path(source)
+    if not path.exists():
+        raise FileNotFoundError(f"Không tìm thấy file local: {source}")
+    return path.read_text(encoding="utf-8", errors="replace")
 
 
 def parse_extinf_attr(line: str, attr: str) -> str:
@@ -101,15 +109,16 @@ def parse_m3u_to_json(
 
 
 def main():
+    raw_base = get_raw_base()
+
     feeds = [
         {
             "id": "truyen-hinh",
             "name": "Truyền Hình",
             "tab_name": "TRUYỀN HÌNH",
-            # Anh có thể đổi sang link raw M3U hoặc file .m3u trong repo
-            "source": f"{REPO_RAW_BASE}/truyen_hinh.m3u",
+            "source": "https://raw.githubusercontent.com/son90pro/Giai-Tri-VIP/refs/heads/main/truyen_hinh.m3u",
             "out_file": "truyen_hinh.json",
-            "raw_url": f"{REPO_RAW_BASE}/truyen_hinh.json",
+            "raw_url": f"{raw_base}/truyen_hinh.json",
             "default_group": "Truyền Hình",
         },
         {
@@ -118,7 +127,7 @@ def main():
             "tab_name": "THỂ THAO",
             "source": "https://tinyurl.com/SN-THTT-VIP",
             "out_file": "the_thao.json",
-            "raw_url": f"{REPO_RAW_BASE}/the_thao.json",
+            "raw_url": f"{raw_base}/the_thao.json",
             "default_group": "Thể Thao",
         },
     ]
@@ -134,14 +143,21 @@ def main():
                 doc_name=item["name"],
                 default_group=item["default_group"],
             )
-            Path(item["out_file"]).write_text(
-                json.dumps(payload, ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
-            master_sources.append({"name": item["tab_name"], "url": item["raw_url"]})
             print(f"[OK] {item['out_file']} -> {len(payload['groups'])} nhóm")
         except Exception as exc:
             print(f"[ERR] {item['tab_name']} ({item['source']}): {exc}")
+            payload = {
+                "id": item["id"],
+                "name": item["name"],
+                "image": None,
+                "groups": [],
+            }
+
+        Path(item["out_file"]).write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        master_sources.append({"name": item["tab_name"], "url": item["raw_url"]})
 
     Path("Giaitri.json").write_text(
         json.dumps({"sources": master_sources}, ensure_ascii=False, indent=2),
@@ -152,3 +168,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    

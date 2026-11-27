@@ -125,7 +125,7 @@ def main():
             "id": "the-thao",
             "name": "Thể Thao",
             "tab_name": "THỂ THAO",
-            "source": "https://tinyurl.com/SN-THTT-VIP",
+            "source": "https://thtt.pages.dev/tttt.m3u",
             "out_file": "the_thao.json",
             "raw_url": f"{raw_base}/the_thao.json",
             "default_group": "Thể Thao",
